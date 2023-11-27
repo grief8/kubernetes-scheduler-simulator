@@ -98,7 +98,7 @@ for fdir in fileDirs:
                     df['arrive_ratio'] = df['arrive_ratio'].apply(lambda x: round(x, 0))
                     df['alloc_ratio'] = df.used_gpu_milli / total_gpu_num / 10
                     df['alloc_ratio'] = df['alloc_ratio'].apply(lambda x: round(x, 2))
-                    
+                    use_nodes = max(df['used_nodes'])
 
 
                     dfn = dict()
@@ -109,6 +109,7 @@ for fdir in fileDirs:
                     dfn['tune']= tdir.name
                     dfn['seed'] = sdir.name
                     dfn['total_gpus'] = total_gpu_num
+                    dfn['use_nodes'] = use_nodes
                     for arrr in range(0, 131, 1):
                         dfv = df[df.arrive_ratio==arrr]
                         if len(dfv) == 0:
