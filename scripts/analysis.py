@@ -121,6 +121,7 @@ def log_to_csv(log_path: Path, outfile: Path):
     out_frag_path = outfile.parent / (outfile.stem + '_frag.csv')
     out_allo_path = outfile.parent / (outfile.stem + '_allo.csv')
     out_cdol_path = outfile.parent / (outfile.stem + '_cdol.csv')
+    out_price_path = outfile.parent / (outfile.stem + '_price.csv')
     # print("Handling logs under  :", log_path)
     
     NUM_CLUSTER_ANALYSIS_LINE = 16
@@ -128,6 +129,7 @@ def log_to_csv(log_path: Path, outfile: Path):
     out_frag_col_dict = {}
     out_allo_col_dict = {}
     out_cdol_col_dict = {}
+    out_price_col_dict = {}
     log_file_counter = 0
     for file in log_path.glob("*.log"):
         log = file.name
@@ -296,6 +298,12 @@ def log_to_csv(log_path: Path, outfile: Path):
                             cdol_list_dict['pod_name'].append(pod_name)
                             cdol_list_dict['cum_pod'].append(cum_sum)
 
+                    # pod(paib-gpu/openb-pod-0017) is scheduled to node(0016-openb-node-0016)\n
+                    if "is scheduled to node" in line:
+                        node = line.split('is scheduled to node')[1].replace('(', '').replace(')', '').replace('\n', '')
+                        node = node.split('-')[1:]
+                        node = '-'.join(node)
+                        out_price_col_dict[node] = 1
 
                 out_dict = {}
                 out_dict.update(meta_dict)
@@ -333,6 +341,9 @@ def log_to_csv(log_path: Path, outfile: Path):
     if len(out_cdol_col_dict) > 0:
         df = pd.DataFrame().from_dict(out_cdol_col_dict, orient='index').T
         df.to_csv(out_cdol_path, index=None)
+    if len(out_price_col_dict) > 0:
+        df = pd.DataFrame().from_dict(out_price_col_dict, orient='index').T
+        df.to_csv(out_price_path, index=None)
     
 
 def failed_pods_in_detail(log_path, outfile=None):
