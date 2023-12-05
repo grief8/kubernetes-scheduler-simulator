@@ -116,8 +116,8 @@ def output_pod(dfp, outfile='pod.yaml', node_select=False):
                 gpu_req_out = "|".join(x for x in gpu_req_val)
                 if len(gpu_req_out) > 0:
                     annotations[ModelName] = gpu_req_out
-        # annotations[CreationTime] = "%s" % row[DATA_CREATION_TIME] if DATA_CREATION_TIME in row else None
-        # annotations[DeletionTime] = "%s" % row[DATA_DELETION_TIME] if DATA_DELETION_TIME in row else None
+        annotations[CreationTime] = "%s" % row[DATA_CREATION_TIME] if DATA_CREATION_TIME in row else None
+        annotations[DeletionTime] = "%s" % row[DATA_DELETION_TIME] if DATA_DELETION_TIME in row else None
 
         pod_yaml = generate_pod_yaml(workload_name=workload_name, container_requests=container_requests,
                                      container_limits=container_limits, node_selector_node_ip=host_node_ip,
