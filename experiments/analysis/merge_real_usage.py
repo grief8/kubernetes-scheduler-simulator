@@ -65,31 +65,23 @@ for fdir in fileDirs:
         tuneDirs = sorted([x for x in pdir.iterdir() if x.is_dir()])
         for tdir in tuneDirs:
             seedDirs = sorted([x for x in tdir.iterdir() if x.is_dir()])
-            avg_cpu = []
-            avg_mem = []
-            avg_cost = []
+            node_list = dict()
             for sdir in seedDirs:
-                afile = fdir / pdir / tdir / sdir / 'analysis.csv'
+                afile = fdir / pdir / tdir / sdir / 'analysis_allo.csv'
                 print(afile)
                 if not afile.is_file():
                     continue
                 try:
                     df = pd.read_csv(afile)
-                    
-                    cpu, mem, cost = calculate_price(afile, price_path)
-                    avg_cpu.append(cpu)
-                    avg_mem.append(mem)
-                    avg_cost.append(cost) 
-                    dfn = dict()
+                    df.columns = [x.split('-')[-1] for x in df.columns]
+                    node_list = df.to_dict(orient="list")
                 except Exception as e:
                     exit("ERROR file: %s\n%s" % (afile, e))
             dfn = dict()
             dfn['workload'] = fdir.name
             dfn['sc_policy'] = pdir.name
             dfn['tune'] = tdir.name
-            dfn['cpu'] = sum(avg_cpu) / len(avg_cpu)
-            dfn['mem'] = sum(avg_mem) / len(avg_mem)
-            dfn['cost'] = sum(avg_cost) / len(avg_cost)
+            dfn['node_list'] = str(node_list['used_nodes'])
             dfo = pd.DataFrame(dfn, index=[len(dflist)]).set_index(["workload", "sc_policy", "tune"])
             dflist.append(dfo)
             
