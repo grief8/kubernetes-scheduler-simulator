@@ -40,6 +40,7 @@ def calculate_price(node_path, price_path):
     total_cost = 0
     cpu = 0
     mem = 0
+    used_nodes = 0
     with open(node_path, 'r') as f:
         line = f.readline()
         line = line.replace(r'\n', '')
@@ -53,9 +54,10 @@ def calculate_price(node_path, price_path):
                 total_cost += aliyun_cost.values[0]
                 cpu += cpu_cost.values[0]
                 mem += mem_cost.values[0]
+                used_nodes += 1
             except IndexError:
                 print(f"No match found for sn: {sn}")
-    return total_cost, cpu, mem
+    return total_cost, cpu, mem, used_nodes
 
 fileDirs = sorted([x for x in data.iterdir() if x.is_dir()])
 dflist = []
@@ -68,16 +70,18 @@ for fdir in fileDirs:
             avg_cpu = []
             avg_mem = []
             avg_cost = []
+            avg_used_nodes = []
             for sdir in seedDirs:
                 afile = fdir / pdir / tdir / sdir / 'analysis_price.csv'
                 print(afile)
                 if not afile.is_file():
                     continue
                 try:
-                    cpu, mem, cost = calculate_price(afile, price_path)
+                    cpu, mem, cost, un = calculate_price(afile, price_path)
                     avg_cpu.append(cpu)
                     avg_mem.append(mem)
                     avg_cost.append(cost) 
+                    avg_used_nodes.append(un)
                     dfn = dict()
                 except Exception as e:
                     exit("ERROR file: %s\n%s" % (afile, e))
@@ -88,6 +92,7 @@ for fdir in fileDirs:
             dfn['cpu'] = sum(avg_cpu) / len(avg_cpu)
             dfn['mem'] = sum(avg_mem) / len(avg_mem)
             dfn['cost'] = sum(avg_cost) / len(avg_cost)
+            dfn['used_nodes'] = sum(avg_used_nodes) / len(avg_used_nodes)
             dfo = pd.DataFrame(dfn, index=[len(dflist)]).set_index(["workload", "sc_policy", "tune"])
             dflist.append(dfo)
             
