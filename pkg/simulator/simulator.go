@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"sort"
-	"strconv"
 	"sync"
 	"time"
 
@@ -293,6 +292,7 @@ func (sim *Simulator) deletePod(p *corev1.Pod) error {
 	sim.syncPodDelete(p.Namespace, p.Name, 500*time.Microsecond)
 	if nodeName != "" {
 		sim.syncNodeUpdateOnPodDelete(nodeName, pod, 2*time.Millisecond)
+		log.Infof("[deletePod] attempt to delete a scheduled pod(%s)\n", utils.GeneratePodKey(p))
 	} else {
 		log.Infof("[deletePod] attempt to delete a non-scheduled pod(%s)\n", utils.GeneratePodKey(p))
 	}
@@ -842,7 +842,7 @@ func (sim *Simulator) SetWorkloadPods(pods []*corev1.Pod) {
 }
 
 func (sim *Simulator) SortClusterPods(pods []*corev1.Pod) {
-
+	var err error
 	shufflePod := sim.customConfig.ShufflePod
 	if shufflePod {
 		sort.Slice(pods, func(i, j int) bool {
@@ -856,9 +856,9 @@ func (sim *Simulator) SortClusterPods(pods []*corev1.Pod) {
 		sort.SliceStable(pods, func(i, j int) bool {
 			var timeI, timeJ time.Time
 			if timeStr, ok := pods[i].Annotations[gpushareutils.CreationTime]; ok {
-				timestamp, err := strconv.ParseInt(timeStr, 10, 64)
-				timeI = time.Unix(timestamp, 0)
-				// timeI, err = time.Parse(time.RFC3339, timeStr)
+				// timestamp, err := strconv.ParseInt(timeStr, 10, 64)
+				// timeI = time.Unix(timestamp, 0)
+				timeI, err = time.Parse(time.RFC3339, timeStr)
 				if err != nil {
 					log.Errorf("Time Parse %s err: %s\n", timeStr, err.Error())
 					timeI = timeNow
@@ -868,9 +868,9 @@ func (sim *Simulator) SortClusterPods(pods []*corev1.Pod) {
 			}
 
 			if timeStr, ok := pods[j].Annotations[gpushareutils.CreationTime]; ok {
-				timestamp, err := strconv.ParseInt(timeStr, 10, 64)
-				timeJ = time.Unix(timestamp, 0)
-				// timeJ, err = time.Parse(time.RFC3339, timeStr)
+				// timestamp, err := strconv.ParseInt(timeStr, 10, 64)
+				// timeJ = time.Unix(timestamp, 0)
+				timeJ, err = time.Parse(time.RFC3339, timeStr)
 				if err != nil {
 					log.Errorf("Time Parse %s err: %s\n", timeStr, err.Error())
 					timeJ = timeNow
