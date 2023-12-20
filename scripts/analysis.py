@@ -122,6 +122,7 @@ def log_to_csv(log_path: Path, outfile: Path):
     out_allo_path = outfile.parent / (outfile.stem + '_allo.csv')
     out_cdol_path = outfile.parent / (outfile.stem + '_cdol.csv')
     out_price_path = outfile.parent / (outfile.stem + '_price.csv')
+    out_time_path = outfile.parent / (outfile.stem + '_time.csv')
     # print("Handling logs under  :", log_path)
     
     NUM_CLUSTER_ANALYSIS_LINE = 16
@@ -130,6 +131,7 @@ def log_to_csv(log_path: Path, outfile: Path):
     out_allo_col_dict = {}
     out_cdol_col_dict = {}
     out_price_col_dict = {}
+    out_time_col_dict = {}
     log_file_counter = 0
     for file in log_path.glob("*.log"):
         log = file.name
@@ -305,6 +307,22 @@ def log_to_csv(log_path: Path, outfile: Path):
                         node = '-'.join(node)
                         out_price_col_dict[node] = 1
 
+                    if line.startswith('[Analysis]'):
+                        _, used, capacity, ratio = line.split(';')
+                        us = used.split(':')[1].strip()
+                        ca = capacity.split(':')[1].strip()
+                        ra = ratio.split(':')[1].strip()
+                        if 'CPU' in used:
+                            keys = ["real_cpu","total_cpu","cpu_ratio"]
+                        elif 'Mem' in used:
+                            keys = ["real_memory","total_memory","memory_ratio"]
+                        values = [us, ca, ra]
+                        for key, val in zip(keys, values):
+                            if key in out_time_col_dict:
+                                out_time_col_dict[key].append(val)
+                            else:
+                                out_time_col_dict[key] = [val]
+                                                
                 out_dict = {}
                 out_dict.update(meta_dict)
                 out_dict.update(fail_dict)
@@ -344,6 +362,9 @@ def log_to_csv(log_path: Path, outfile: Path):
     if len(out_price_col_dict) > 0:
         df = pd.DataFrame().from_dict(out_price_col_dict, orient='index').T
         df.to_csv(out_price_path, index=None)
+    if len(out_time_col_dict) > 0:
+        df = pd.DataFrame().from_dict(out_time_col_dict, orient='index').T
+        df.to_csv(out_time_path, index=None)
     
 
 def failed_pods_in_detail(log_path, outfile=None):
