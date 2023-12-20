@@ -1071,7 +1071,7 @@ func GetNodeResourceViaHandleAndName(handle framework.Handle, nodeName string) (
 func GetNodeResourceViaPodList(podList []*corev1.Pod, node *corev1.Node) (nodeRes *simontype.NodeResource) {
 	allocatable := node.Status.Allocatable
 	reqs, _ := GetPodsTotalRequestsAndLimitsByNodeName(podList, node.Name)
-	nodeCpuReq, _ := reqs[corev1.ResourceCPU], reqs[corev1.ResourceMemory]
+	nodeCpuReq, nodeMemoryReq := reqs[corev1.ResourceCPU], reqs[corev1.ResourceMemory]
 	nodeGpuAffinity := map[string]int{}
 	for _, p := range podList {
 		affinity := gpushareutils.GetGpuAffinityFromPodAnnotation(p)
@@ -1088,6 +1088,8 @@ func GetNodeResourceViaPodList(podList []*corev1.Pod, node *corev1.Node) (nodeRe
 		GpuNumber:        gpushareutils.GetGpuCountOfNode(node),
 		GpuType:          gpushareutils.GetGpuModelOfNode(node),
 		GpuAffinity:      nodeGpuAffinity,
+		MemoryLeft:       allocatable.Memory().MilliValue() - nodeMemoryReq.MilliValue(),
+		MemoryCapacity:   allocatable.Memory().MilliValue(),
 	}
 }
 

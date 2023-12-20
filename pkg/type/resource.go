@@ -52,7 +52,7 @@ type PodResource struct { // typical pod, without name and namespace.
 	MilliGpu  int64 // Milli GPU request per GPU, 0-1000
 	GpuNumber int
 	GpuType   string
-	//Memory	  int64
+	Memory    int64
 }
 
 // NodeResource is initialized by utils.GetNodeResourceViaPodList, utils.GetNodeResourceViaHandleAndName, utils.GetNodeResourceViaNodeInfo
@@ -64,8 +64,8 @@ type NodeResource struct {
 	GpuNumber        int
 	GpuType          string
 	GpuAffinity      map[string]int
-	// MemoryLeft       int64
-	// MemoryCapacity   int64
+	MemoryLeft       int64
+	MemoryCapacity   int64
 }
 
 type VirtualPodResource struct {
@@ -94,7 +94,7 @@ type NodeResourceFlat struct {
 	MilliGpu string
 	GpuType  string
 	Remark   string
-	//Memory   int64
+	// Memory   int64
 }
 
 func (tpr PodResource) Repr() string {

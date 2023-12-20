@@ -37,6 +37,10 @@ func (sim *Simulator) ClusterGpuFragReport() {
 	var clusterUsedGpus int       // num. of used GPUs
 	var clusterUsedGpuMilli int64 // num. of used GPU in Milli
 	var clusterTotalGpus int      // num. of total GPUs in the cluster
+	var clusterUsedCpuMilli int64 // num. of used CPU in Milli
+	var clusterTotalCpuMilli int64 // num. of total CPU in Milli
+	var clusterTotalMem int64      // num. of total memory in MiB
+	var clusterUsedMem int64       // num. of used memory in MiB
 
 	var nodeCnt int = 0
 	for _, ns := range nodeStatus {
@@ -52,6 +56,10 @@ func (sim *Simulator) ClusterGpuFragReport() {
 				clusterUsedGpus += nodeRes.GpuNumber // treat all GPUs on that node are "used"
 				clusterUsedGpuMilli += int64(nodeRes.GpuNumber*gpushareutils.MILLI) - nodeRes.GetTotalMilliGpuLeft()
 			}
+			clusterTotalCpuMilli += nodeRes.MilliCpuCapacity
+			clusterTotalMem += nodeRes.MemoryCapacity
+			clusterUsedMem += nodeRes.MemoryCapacity - nodeRes.MemoryLeft
+			clusterUsedCpuMilli += nodeRes.MilliCpuCapacity - nodeRes.MilliCpuLeft
 		}
 		nodeCnt += 1
 	}
@@ -71,6 +79,8 @@ func (sim *Simulator) ClusterGpuFragReport() {
 	//if clusterTotalGpus*gpushareutils.MILLI-int(idleGpuMilli) != int(clusterUsedGpuMilli) { // this prints unnecessary logs due to the int rounding error
 	//	log.Errorf("totalGpuMilli (%d) - idleGpuMilli (%d) != usedGpuMilli (%d)", clusterTotalGpus*gpushareutils.MILLI, idleGpuMilli, clusterUsedGpuMilli)
 	//}
+	log.Infof("[Analysis]; Used CPU: %.2f; Total CPU: %.2f; Used CPU ratio: %.2f%%\n", float64(clusterUsedCpuMilli)/1000, float64(clusterTotalCpuMilli)/1000, 100*float64(clusterUsedCpuMilli)/float64(clusterTotalCpuMilli))
+	log.Infof("[Analysis]; Used Mem: %.2f; Total Mem: %.2f; Used Mem ratio: %.2f%%\n", float64(clusterUsedMem)/1024, float64(clusterTotalMem)/1024, 100*float64(clusterUsedMem)/float64(clusterTotalMem))
 	log.Infof("[Alloc]; Used nodes: %d; Used GPUs: %d; Used GPU Milli: %d; Total GPUs: %d; Arrived GPU Milli: %d\n", clusterUsedNodes, clusterUsedGpus, clusterUsedGpuMilli, clusterTotalGpus, sim.arrPodGpuMilli)
 }
 
