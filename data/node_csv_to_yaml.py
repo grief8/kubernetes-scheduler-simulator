@@ -57,7 +57,7 @@ def output_pod(dfp, outfile='pod.yaml', node_select=False):
            
         container_requests = {}
         if 'cpu_milli' in row:
-            if row['cpu_milli'] < 20000:
+            if row['cpu_milli'] < 80000:
                 continue
             container_requests['cpu'] = "%dm" % (row['cpu_milli'])
         elif 'cpu' in row:
@@ -67,7 +67,7 @@ def output_pod(dfp, outfile='pod.yaml', node_select=False):
         else:
             exit("neither cpu_milli nor cpu in row")
         if 'memory_mib' in row:
-            if row['memory_mib'] < 200000:
+            if row['memory_mib'] < 300000:
                 continue
             container_requests['memory'] = "%dMi" % row['memory_mib']
         container_limits = container_requests.copy()
